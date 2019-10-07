@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Microsoft.Avro.Tests</AssemblyName>
+	  <TargetFrameworks>netcoreapp2.0;net451</TargetFrameworks>
+    <Description>Tests Microsoft Avro libraries</Description>
+    <PackageTags>Avro</PackageTags>
+  </PropertyGroup>
+  <Import Project="..\build.props" />
+  <ItemGroup>
+    <Compile Remove="CodeGenTests\CodeGenerationTests.cs" />
+    <Compile Remove="CodeGenTests\CodeGenerationVerificationSteps.cs" />
+    <Compile Remove="CodeGenTests\GenerationVerification.feature.cs" />
+    <Compile Remove="SchemaTests\ReflectionSchemaBuilderTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.6.1" />
+    <PackageReference Include="xunit" Version="2.2.0" />
+    <PackageReference Include="xunit.core" Version="2.2.0" />
+    <PackageReference Include="xunit.extensibility.core" Version="2.2.0" />
+    <PackageReference Include="xunit.extensibility.execution" Version="2.2.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
+    <PackageReference Include="SpecFlow.NetCore" Version="1.0.0-*" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net451'">
+      <PackageReference Include="SpecFlow" Version="2.1.0" />
+      <Reference Include="System" />
+      <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Avro">
+      <HintPath>..\external\avro\Avro.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net">
+      <HintPath>..\external\avro\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="protobuf-net">
+      <HintPath>..\external\protobuf.net\r602\net30\protobuf-net.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Avro.Core\Microsoft.Avro.Core.csproj" />
+    <ProjectReference Include="..\Microsoft.Avro.Tools\Microsoft.Avro.Tools.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+</Project>

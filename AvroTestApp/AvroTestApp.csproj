@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>AvroTestApp</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <Description>Test Application for Microsoft Avro libraries</Description>
+    <PackageTags>Avro</PackageTags>
+    <TargetFrameworks>netcoreapp2.0;net451</TargetFrameworks>
+	<RuntimeIdentifiers>win7-x64;win7-x86;ubuntu.16.04-x64;ubuntu.16.04-x86</RuntimeIdentifiers>
+    <RuntimeIdentifier>win7-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <Import Project="..\build.props" />
+  <ItemGroup>
+    <PackageReference Include="System.Data.SqlClient" Version="4.7.0-rc1.19456.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Avro.Core\Microsoft.Avro.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
+    <PackageReference Include="Dapper">
+      <Version>2.0.4</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Data">
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.1\System.Data.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
