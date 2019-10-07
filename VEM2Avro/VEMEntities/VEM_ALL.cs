@@ -1,10 +1,5 @@
-﻿using Microsoft.Hadoop.Avro;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System;
 using System.Runtime.Serialization;
-using System.Text;
-using Vem2Avro.Data;
 
 namespace AvroTestApp.VEMEntities
 {

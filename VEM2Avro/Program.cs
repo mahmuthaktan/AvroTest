@@ -12,6 +12,11 @@ using VEM2Avro.VEMEntities;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Collections;
+using Microsoft.CodeAnalysis.Text;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Emit;
 
 namespace VEM2Avro
 {
@@ -19,20 +24,6 @@ namespace VEM2Avro
     {
         static void Main(string[] args)
         {
-            string line = Environment.NewLine;
-
-            string fileName = "Messages.avro";
-            string filePath = null;
-            if (Environment.NewLine.Contains("\r"))
-            {
-                filePath = new DirectoryInfo(".") + @"\" + fileName;
-            }
-            else
-            {
-                filePath = new DirectoryInfo(".") + @"/" + fileName;
-            }
-
-             
 
             //Hasta:
             List<VEM_HASTA> listHasta = GetInserted<VEM_HASTA>("HASTA",
@@ -53,22 +44,94 @@ namespace VEM2Avro
                 }
 
                 dataStream.Seek(0, SeekOrigin.Begin);
-                //using (var dataStream = new MemoryStream())
-                //    var reader = DataFileReader<VEM_HASTA>.OpenReader(memoryStream);
-
-               // using (var dataStreamOrj = new MemoryStream())
-                //using (var dataStream = new FileStream(filePath, FileMode.Open))
-                //{
-                //    var avroOku = AvroContainer.CreateReader<VEM_HASTA>(dataStream);
-                //}
                 var avroOku = AvroContainer.CreateReader<VEM_HASTA>(dataStream);
 
-
-
                 dataStream.Dispose();
+                 
+                //Test II
+                var assembly = Compile(@"
+using System;
+using System.Runtime.Serialization;
+
+namespace AvroTestApp.VEMEntities
+{
+    [DataContract]
+    public class VEM_AMELIYAT
+    {
+        [DataMember]
+        [NullableSchema, DefaultValue(null)]
+        public int AMELIYAT_KODU { get; set; }
+        [DataMember]
+        public string REFERANS_TABLO_ADI { get; set; }
+        [DataMember]
+        [NullableSchema, DefaultValue(null)]
+        public int? HASTA_BASVURU_KODU { get; set; }
+        [DataMember]
+        public string AMELIYAT_ADI { get; set; }
+        [DataMember]
+        public string AMELIYAT_TURU { get; set; }
+        [DataMember]
+        [NullableSchema, DefaultValue(null)]
+        public DateTime? AMELIYAT_BASLAMA_ZAMANI { get; set; }
+        [DataMember]
+        [NullableSchema, DefaultValue(null)]
+        public DateTime? AMELIYAT_BITIS_ZAMANI { get; set; }
+        [DataMember]
+        public string MASA_CIHAZ_KODU { get; set; }
+        [DataMember]
+        [NullableSchema, DefaultValue(null)]
+        public int? BIRIM_KODU { get; set; }
+        [DataMember]
+        public int DEFTER_NUMARASI { get; set; }
+        [DataMember]
+        public string AMELIYAT_DURUMU { get; set; }
+        [DataMember]
+        public string ANESTEZI_TURU { get; set; }
+        [DataMember]
+        public string AMELIYAT_TIPI { get; set; }
+        [DataMember]
+        [NullableSchema, DefaultValue(null)]
+        public int? SKOPI_SURESI { get; set; }
+        [DataMember]
+        public string PROFILAKSI_PERIYODU { get; set; }
+        [DataMember]
+        public string PROFILAKSI_KODU { get; set; }
+        [DataMember]
+        [NullableSchema, DefaultValue(null)]
+        public int? EKLEYEN_KULLANICI_KODU { get; set; }
+        [DataMember]
+        [NullableSchema, DefaultValue(null)]
+        public int? GUNCELLEYEN_KULLANICI_KODU { get; set; }
+        [DataMember]
+        [NullableSchema, DefaultValue(null)]
+        public int? ANESTEZI_BASLAMA_ZAMANI { get; set; }
+        [DataMember]
+        [NullableSchema, DefaultValue(null)]
+        public int? ANESTEZI_BITIS_ZAMANI { get; set; }
+        [DataMember]
+        public bool ANESTEZI_NOTU { get; set; }
+        [DataMember]
+        [NullableSchema, DefaultValue(null)]
+        public DateTime? GUNCELLEME_ZAMANI { get; set; }
+        [DataMember]
+        [NullableSchema, DefaultValue(null)]
+        public int? HASTA_KODU { get; set; }
+        [DataMember]
+        [NullableSchema, DefaultValue(null)]
+        public DateTime? KAYIT_ZAMANI { get; set; } 
+        }
+   }
+
+");
+                Type type = assembly.GetType("VEM_AMELIYAT");
+                Type listType = typeof(List<>).MakeGenericType(new[] { type });
+                IList list = (IList)Activator.CreateInstance(listType);
+                list.Add(null);
+
+
             }
 
-          
+
 
 
 
@@ -148,6 +211,40 @@ namespace VEM2Avro
         }
 
         private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+
+        private static Assembly Compile(string sourceCode)
+        {
+            var codeString = SourceText.From(sourceCode);
+            var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp7_3);
+            var parsedSyntaxTree = SyntaxFactory.ParseSyntaxTree(codeString, options);
+            var references = new MetadataReference[]
+            {
+               MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+               MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),
+               MetadataReference.CreateFromFile(typeof(System.Runtime.AssemblyTargetedPatchBandAttribute).Assembly.Location), 
+               MetadataReference.CreateFromFile(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo).Assembly.Location),
+            };
+            var csc = CSharpCompilation.Create("Hello.dll",
+                new[] { parsedSyntaxTree },
+                references: references,
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
+                    optimizationLevel: OptimizationLevel.Release,
+                    assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default));
+            EmitResult emitResult;
+            using (var ms = new System.IO.MemoryStream())
+            {
+                emitResult = csc.Emit(ms);
+                if (emitResult.Success)
+                {
+                    var assembly = Assembly.Load(ms.GetBuffer());
+                    return assembly;
+                }
+            }
+            var message = string.Join("\r\n", emitResult.Diagnostics);
+            throw new Exception(message);
+        }
+
 
         public static long ConvertDateTimeToPosixTime(DateTime value)
         {
